@@ -11,7 +11,7 @@ function NoteList({ page, search }: NoteListProps) {
   const queryClient = useQueryClient();
 
   const {
-    data: response, // переіменували для зручності
+    data: response,
     isLoading,
     error,
   } = useQuery({
