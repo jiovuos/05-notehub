@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useDebounce } from 'use-debounce';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import type { UseQueryOptions } from '@tanstack/react-query';
 import { fetchNotes, deleteNote } from '../../services/noteService';
 import type { FetchNotesResponse } from '../../services/noteService';
 import SearchBox from '../SearchBox/SearchBox';
@@ -19,14 +18,15 @@ function App() {
 
   const queryClient = useQueryClient();
 
-  const queryOptions: UseQueryOptions<FetchNotesResponse, Error> = {
+  const {
+    data: response,
+    isLoading,
+    isError,
+  } = useQuery<FetchNotesResponse, Error, FetchNotesResponse>({
     queryKey: ['notes', page, debouncedSearch],
     queryFn: () => fetchNotes({ page, perPage: 12, search: debouncedSearch }),
-    // @ts-expect-error: React Query types does not include keepPreviousData
-    keepPreviousData: true,
-  };
-
-  const { data: response, isLoading, isError } = useQuery(queryOptions);
+    placeholderData: previousData => previousData,
+  });
 
   const mutation = useMutation({
     mutationFn: deleteNote,
@@ -39,6 +39,13 @@ function App() {
     <div className={css.app}>
       <header className={css.toolbar}>
         <SearchBox onSearch={setSearch} />
+        {response && (
+          <Pagination
+            totalPages={response.totalPages}
+            currentPage={page}
+            onPageChange={setPage}
+          />
+        )}
         <button className={css.button} onClick={() => setShowModal(true)}>
           Create note +
         </button>
@@ -50,11 +57,6 @@ function App() {
       {response && (
         <>
           <NoteList notes={response.data} onDelete={mutation.mutate} />
-          <Pagination
-            totalPages={response.totalPages}
-            currentPage={page}
-            onPageChange={setPage}
-          />
         </>
       )}
 
