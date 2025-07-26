@@ -1,46 +1,21 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { deleteNote, fetchNotes } from '../../services/noteService';
+import type { Note } from '../../types/note';
 import css from './NoteList.module.css';
 
 export interface NoteListProps {
-  page: number;
-  search: string;
+  notes: Note[];
+  onDelete: (id: number) => void;
 }
 
-function NoteList({ page, search }: NoteListProps) {
-  const queryClient = useQueryClient();
-
-  const {
-    data: response,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ['notes', page, search],
-    queryFn: () => fetchNotes({ page, perPage: 12, search }),
-  });
-
-  const mutation = useMutation({
-    mutationFn: deleteNote,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notes'] });
-    },
-  });
-
-  if (isLoading) return <p>Loading...</p>;
-  if (error || !response) return <p>Error loading notes</p>;
-
+function NoteList({ notes, onDelete }: NoteListProps) {
   return (
     <ul className={css.list}>
-      {response.data.map(note => (
+      {notes.map(note => (
         <li key={note.id} className={css.listItem}>
           <h2 className={css.title}>{note.title}</h2>
           <p className={css.content}>{note.content}</p>
           <div className={css.footer}>
             <span className={css.tag}>{note.tag}</span>
-            <button
-              className={css.button}
-              onClick={() => mutation.mutate(note.id)}
-            >
+            <button className={css.button} onClick={() => onDelete(note.id)}>
               Delete
             </button>
           </div>

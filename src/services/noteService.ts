@@ -33,7 +33,7 @@ export const fetchNotes = async ({
     params.search = search.trim();
   }
 
-  const res = await instance.get('/notes', {
+  const res = await instance.get<{ notes: Note[]; totalPages: number }>('/notes', {
     params,
   });
 
@@ -48,11 +48,11 @@ export const createNote = async (data: {
   content: string;
   tag: NoteTag;
 }): Promise<Note> => {
-  const res = await instance.post('/notes', data);
+  const res = await instance.post<Note>('/notes', data);
   return res.data;
 };
 
-export const deleteNote = async (id: string): Promise<Note> => {
-  const res = await instance.delete(`/notes/${id}`);
+export const deleteNote = async (id: string | number): Promise<Note> => {
+  const res = await instance.delete<Note>(`/notes/${id}`);
   return res.data;
 };
