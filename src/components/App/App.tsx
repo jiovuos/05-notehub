@@ -19,11 +19,10 @@ function App() {
 
   const queryClient = useQueryClient();
 
-  // Правильний тип для useQuery опцій із keepPreviousData
   const queryOptions: UseQueryOptions<FetchNotesResponse, Error> = {
     queryKey: ['notes', page, debouncedSearch],
     queryFn: () => fetchNotes({ page, perPage: 12, search: debouncedSearch }),
-    // @ts-expect-error: React Query types не включають keepPreviousData
+    // @ts-expect-error: React Query types does not include keepPreviousData
     keepPreviousData: true,
   };
 
