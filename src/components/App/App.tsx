@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useDebounce } from 'use-debounce';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fetchNotes, deleteNote } from '../../services/noteService';
+import { useQuery } from '@tanstack/react-query';
+import { fetchNotes } from '../../services/noteService';
 import type { FetchNotesResponse } from '../../services/noteService';
 import SearchBox from '../SearchBox/SearchBox';
 import Pagination from '../Pagination/Pagination';
@@ -16,8 +16,6 @@ function App() {
   const [showModal, setShowModal] = useState(false);
   const [debouncedSearch] = useDebounce(search, 500);
 
-  const queryClient = useQueryClient();
-
   const {
     data: response,
     isLoading,
@@ -28,18 +26,16 @@ function App() {
     placeholderData: previousData => previousData,
   });
 
-  const mutation = useMutation({
-    mutationFn: deleteNote,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notes'] });
-    },
-  });
+  const handleSearch = (newSearch: string) => {
+    setSearch(newSearch);
+    setPage(1);
+  };
 
   return (
     <div className={css.app}>
       <header className={css.toolbar}>
-        <SearchBox onSearch={setSearch} />
-        {response && (
+        <SearchBox onSearch={handleSearch} />
+        {response && response.totalPages > 1 && (
           <Pagination
             totalPages={response.totalPages}
             currentPage={page}
@@ -54,10 +50,12 @@ function App() {
       {isLoading && <p>Loading...</p>}
       {isError && <p>Error loading notes</p>}
 
-      {response && (
-        <>
-          <NoteList notes={response.data} onDelete={mutation.mutate} />
-        </>
+      {response && response.data.length > 0 && (
+        <NoteList notes={response.data} />
+      )}
+
+      {response && response.data.length === 0 && !isLoading && (
+        <p className={css.empty}>No notes found.</p>
       )}
 
       {showModal && (
