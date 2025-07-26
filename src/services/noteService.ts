@@ -33,9 +33,12 @@ export const fetchNotes = async ({
     params.search = search.trim();
   }
 
-  const res = await instance.get<{ notes: Note[]; totalPages: number }>('/notes', {
-    params,
-  });
+  const res = await instance.get<{ notes: Note[]; totalPages: number }>(
+    '/notes',
+    {
+      params,
+    }
+  );
 
   return {
     data: res.data.notes,
